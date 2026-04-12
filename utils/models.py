@@ -40,6 +40,11 @@ class SimpleCNN(nn.Module):
         )
         # Calculate flattened size after 3 rounds of MaxPool2d(2)
         reduced_size = input_size // 8
+        if reduced_size == 0:
+            raise ValueError(
+                f"input_size={input_size} is too small for 3 MaxPool2d(2) layers. "
+                f"Minimum input_size is 8."
+            )
         flat_dim = 128 * reduced_size * reduced_size
 
         self.classifier = nn.Sequential(
