@@ -28,11 +28,11 @@ This roadmap delivers a complete set of performance-focused PyTorch tutorials, s
   2. A reference tutorial exists demonstrating the standalone .py format with rich logging, docstrings, and inline comments
   3. The reference tutorial includes before/after benchmark output showing measurable performance comparison
   4. Any shared utilities (logging setup, benchmark helpers, simple model definitions) are importable by tutorials
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md — Folder structure + shared utils package
+- [ ] 01-02-PLAN.md — Reference tutorial + README navigation
 
 ### Phase 2: Profiling & Diagnostics
 **Goal**: Users can identify and measure performance bottlenecks before applying optimizations
@@ -43,7 +43,7 @@ Plans:
   2. User can run memory profiling tutorial and see GPU memory breakdown, OOM strategies, and gradient checkpointing impact
   3. User can run DataLoader tuning tutorial and see throughput differences across num_workers, prefetch, and pinned memory configs
   4. User can run torch.compile tutorial and see mode comparisons, graph break detection, and speedup measurements
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 02-01: TBD
@@ -58,7 +58,7 @@ Plans:
   1. User can run AMP tutorial and see autocast/GradScaler in action with before/after training speed comparison
   2. User can run BF16 vs FP16 tutorial and see numerical stability differences, hardware requirements, and benchmark comparisons
   3. User can run FP8 tutorial with Transformer Engine and see training speedup on supported hardware
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 03-01: TBD
@@ -71,7 +71,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. User can run pruning tutorial and see structured/unstructured pruning applied with sparsity levels, accuracy impact, and inference speedup logged
   2. User can run distillation tutorial and see a smaller student model trained from a teacher with accuracy and speed comparisons
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 04-01: TBD
@@ -85,7 +85,7 @@ Plans:
   1. User can run TensorRT tutorial and see model export, engine optimization, and latency/throughput benchmarks vs vanilla PyTorch
   2. User can run ONNX tutorial and see model export, runtime optimization, and inference speed comparison
   3. User can run TorchScript tutorial and see tracing vs scripting approaches with JIT compilation speedup measured
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 05-01: TBD
@@ -100,7 +100,7 @@ Plans:
   2. User can run FSDP tutorial and see model sharding across GPUs with memory savings and throughput reported
   3. User can run model parallelism tutorial and see layers split across GPUs with pipeline execution and memory distribution logged
   4. User can run DeepSpeed tutorial and see ZeRO stages, CPU offloading, and memory/speed tradeoffs benchmarked
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 06-01: TBD
