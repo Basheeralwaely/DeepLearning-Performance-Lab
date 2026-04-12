@@ -104,6 +104,7 @@ def get_sample_batch(
     channels: int = 3,
     height: int = 32,
     width: int = 32,
+    num_classes: int = 10,
     device: Optional[torch.device] = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Generate a random sample batch for testing and benchmarking.
@@ -113,6 +114,7 @@ def get_sample_batch(
         channels: Number of input channels.
         height: Spatial height of input images.
         width: Spatial width of input images.
+        num_classes: Number of output classes; labels are drawn from [0, num_classes).
         device: Target device (defaults to CPU if None).
 
     Returns:
@@ -120,5 +122,5 @@ def get_sample_batch(
         and labels is a random integer tensor of class indices.
     """
     inputs = torch.randn(batch_size, channels, height, width, device=device)
-    labels = torch.randint(0, 10, (batch_size,), device=device)
+    labels = torch.randint(0, num_classes, (batch_size,), device=device)
     return inputs, labels
