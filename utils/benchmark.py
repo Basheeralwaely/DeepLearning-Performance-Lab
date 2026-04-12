@@ -116,6 +116,18 @@ def print_benchmark_table(results: list[dict[str, Any]]) -> None:
         print("No benchmark results to display.")
         return
 
+    # Validate required keys up front
+    for i, r in enumerate(results):
+        if "name" not in r:
+            raise ValueError(
+                f"Result at index {i} is missing required key 'name'. "
+                f"Got keys: {list(r.keys())}"
+            )
+        if "time_seconds" not in r:
+            raise ValueError(
+                f"Result at index {i} is missing required key 'time_seconds'."
+            )
+
     has_memory = any(r.get("memory_mb") is not None for r in results)
 
     print()
