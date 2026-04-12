@@ -61,6 +61,14 @@ def main():
     logger.info(f"Input: batch_size={BATCH_SIZE}, shape={tuple(x.shape)}")
     logger.info(f"Iterations per benchmark: {NUM_ITERATIONS}")
 
+    # Warm-up: ensure CUDA kernels are compiled before timed runs
+    logger.info("Running warm-up pass to initialize CUDA kernels...")
+    with torch.inference_mode():
+        for _ in range(10):
+            _ = model(x)
+    if device.type == "cuda":
+        torch.cuda.synchronize()
+
     # ----------------------------------------------------------------
     # Section 1: Baseline - Standard forward pass (autograd enabled)
     # ----------------------------------------------------------------
