@@ -12,7 +12,9 @@ Every tutorial must be runnable, well-logged, and teach one specific performance
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Each tutorial is a standalone .py file with rich logging and inline explanations — Validated in Phase 1: Repository Foundation
+- [x] Repo organized by technique (one folder per technique) — Validated in Phase 1: Repository Foundation
+- [x] Measurable performance comparisons (before/after benchmarks in each tutorial) — Validated in Phase 1: Repository Foundation
 
 ### Active
 
@@ -23,9 +25,9 @@ Every tutorial must be runnable, well-logged, and teach one specific performance
 - [ ] Quantization tutorials (post-training quantization, quantization-aware training, INT8)
 - [ ] Profiling tutorials (PyTorch profiler, bottleneck analysis, memory tracking)
 - [ ] Inference optimization tutorials (batching, TorchScript, ONNX export)
-- [ ] Each tutorial is a standalone .py file with rich logging and inline explanations
-- [ ] Repo organized by technique (one folder per technique)
-- [ ] Measurable performance comparisons (before/after benchmarks in each tutorial)
+- [ ] Each tutorial is a standalone .py file with rich logging and inline explanations (see Validated)
+- [ ] Repo organized by technique (one folder per technique) (see Validated)
+- [ ] Measurable performance comparisons (before/after benchmarks in each tutorial) (see Validated)
 
 ### Out of Scope
 
@@ -54,9 +56,9 @@ Every tutorial must be runnable, well-logged, and teach one specific performance
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Organize by technique | ML engineers search for specific tricks, not difficulty levels | — Pending |
-| .py over notebooks | Richer logging, easier to run on clusters, version-control friendly | — Pending |
-| PyTorch-centric | Dominant framework for performance-focused ML engineering | — Pending |
+| Organize by technique | ML engineers search for specific tricks, not difficulty levels | Validated (Phase 1) |
+| .py over notebooks | Richer logging, easier to run on clusters, version-control friendly | Validated (Phase 1) |
+| PyTorch-centric | Dominant framework for performance-focused ML engineering | Validated (Phase 1) |
 
 ## Evolution
 
@@ -76,4 +78,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-12 after initialization*
+*Last updated: 2026-04-12 after Phase 1 completion*
