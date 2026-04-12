@@ -46,8 +46,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — PyTorch Profiler trace export + GPU memory profiling with OOM and checkpointing
-- [ ] 02-02-PLAN.md — DataLoader tuning sweep + torch.compile diagnostics with graph break detection
+- [x] 02-01-PLAN.md — PyTorch Profiler trace export + GPU memory profiling with OOM and checkpointing
+- [x] 02-02-PLAN.md — DataLoader tuning sweep + torch.compile diagnostics with graph break detection
 
 ### Phase 3: Mixed Precision Training
 **Goal**: Users can train models faster using reduced precision with understanding of tradeoffs
