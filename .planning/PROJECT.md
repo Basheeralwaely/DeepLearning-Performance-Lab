@@ -15,6 +15,7 @@ Every tutorial must be runnable, well-logged, and teach one specific performance
 - [x] Each tutorial is a standalone .py file with rich logging and inline explanations — Validated in Phase 1: Repository Foundation
 - [x] Repo organized by technique (one folder per technique) — Validated in Phase 1: Repository Foundation
 - [x] Measurable performance comparisons (before/after benchmarks in each tutorial) — Validated in Phase 1: Repository Foundation
+- [x] Profiling tutorials (PyTorch profiler, bottleneck analysis, memory tracking) — Validated in Phase 2: Profiling & Diagnostics
 
 ### Active
 
@@ -23,11 +24,7 @@ Every tutorial must be runnable, well-logged, and teach one specific performance
 - [ ] TensorRT acceleration tutorials (model export, optimization, benchmarking)
 - [ ] Pruning tutorials (structured/unstructured pruning, magnitude-based, iterative)
 - [ ] Quantization tutorials (post-training quantization, quantization-aware training, INT8)
-- [ ] Profiling tutorials (PyTorch profiler, bottleneck analysis, memory tracking)
 - [ ] Inference optimization tutorials (batching, TorchScript, ONNX export)
-- [ ] Each tutorial is a standalone .py file with rich logging and inline explanations (see Validated)
-- [ ] Repo organized by technique (one folder per technique) (see Validated)
-- [ ] Measurable performance comparisons (before/after benchmarks in each tutorial) (see Validated)
 
 ### Out of Scope
 
@@ -78,4 +75,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-12 after Phase 1 completion*
+*Last updated: 2026-04-12 after Phase 2 completion*
