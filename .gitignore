@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# Profiler artifacts (D-08)
+profiler_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
