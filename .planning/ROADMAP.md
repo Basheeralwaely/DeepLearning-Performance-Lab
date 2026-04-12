@@ -60,8 +60,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
+- [ ] 03-01-PLAN.md — Utility extensions (SimpleViT, get_gpu_capability) + AMP training tutorial
+- [ ] 03-02-PLAN.md — BF16 vs FP16 comparison + FP8 Transformer Engine tutorial
 
 ### Phase 4: Model Compression
 **Goal**: Users can reduce model size while preserving accuracy using pruning and distillation
