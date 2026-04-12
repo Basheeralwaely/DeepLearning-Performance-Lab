@@ -46,9 +46,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
-- [ ] 02-03: TBD
+- [ ] 02-01-PLAN.md — PyTorch Profiler trace export + GPU memory profiling with OOM and checkpointing
+- [ ] 02-02-PLAN.md — DataLoader tuning sweep + torch.compile diagnostics with graph break detection
 
 ### Phase 3: Mixed Precision Training
 **Goal**: Users can train models faster using reduced precision with understanding of tradeoffs
@@ -115,7 +114,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Repository Foundation | 0/2 | Not started | - |
-| 2. Profiling & Diagnostics | 0/3 | Not started | - |
+| 2. Profiling & Diagnostics | 0/2 | Not started | - |
 | 3. Mixed Precision Training | 0/2 | Not started | - |
 | 4. Model Compression | 0/2 | Not started | - |
 | 5. Inference Optimization | 0/2 | Not started | - |
