@@ -83,9 +83,12 @@ def main():
     logger.info("then actively records for 'active' steps. This avoids capturing")
     logger.info("cold-start overhead in the profiled data.")
 
-    # Create output directory for trace files
-    os.makedirs("profiler_output", exist_ok=True)
-    trace_path = os.path.join("profiler_output", "training_trace.json")
+    # Create output directory for trace files, anchored to script location
+    # so the output lands in the same place regardless of the working directory.
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.join(script_dir, "profiler_output")
+    os.makedirs(output_dir, exist_ok=True)
+    trace_path = os.path.join(output_dir, "training_trace.json")
 
     total_steps = (PROFILER_WAIT + PROFILER_WARMUP + PROFILER_ACTIVE) * PROFILER_REPEAT
 
