@@ -74,31 +74,31 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DIST-01 | — | Pending |
-| DIST-02 | — | Pending |
-| DIST-03 | — | Pending |
-| DIST-04 | — | Pending |
-| PREC-01 | — | Pending |
-| PREC-02 | — | Pending |
-| PREC-03 | — | Pending |
-| INFER-01 | — | Pending |
-| INFER-02 | — | Pending |
-| INFER-03 | — | Pending |
-| COMP-01 | — | Pending |
-| COMP-02 | — | Pending |
-| PROF-01 | — | Pending |
-| PROF-02 | — | Pending |
-| PROF-03 | — | Pending |
-| PROF-04 | — | Pending |
-| REPO-01 | — | Pending |
-| REPO-02 | — | Pending |
-| REPO-03 | — | Pending |
+| REPO-01 | Phase 1 | Pending |
+| REPO-02 | Phase 1 | Pending |
+| REPO-03 | Phase 1 | Pending |
+| PROF-01 | Phase 2 | Pending |
+| PROF-02 | Phase 2 | Pending |
+| PROF-03 | Phase 2 | Pending |
+| PROF-04 | Phase 2 | Pending |
+| PREC-01 | Phase 3 | Pending |
+| PREC-02 | Phase 3 | Pending |
+| PREC-03 | Phase 3 | Pending |
+| COMP-01 | Phase 4 | Pending |
+| COMP-02 | Phase 4 | Pending |
+| INFER-01 | Phase 5 | Pending |
+| INFER-02 | Phase 5 | Pending |
+| INFER-03 | Phase 5 | Pending |
+| DIST-01 | Phase 6 | Pending |
+| DIST-02 | Phase 6 | Pending |
+| DIST-03 | Phase 6 | Pending |
+| DIST-04 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 19 total
-- Mapped to phases: 0
-- Unmapped: 19 ⚠️
+- Mapped to phases: 19
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-12*
-*Last updated: 2026-04-12 after initial definition*
+*Last updated: 2026-04-12 after roadmap creation*
