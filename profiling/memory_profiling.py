@@ -209,8 +209,38 @@ def main():
         except (torch.cuda.OutOfMemoryError, RuntimeError) as e:
             logger.warning(f"OOM/CUDA error at batch_size={bs}: {type(e).__name__}")
             logger.warning("Clearing cache and stopping batch size sweep.")
-            # Ensure all tensors are freed before clearing cache
-            del m
+            # Delete all potentially-allocated GPU tensors before clearing cache.
+            # OOM can occur at any point after partial allocation, so we must
+            # clean up every variable that may hold a GPU tensor in this scope.
+            # Using explicit try/del since modifying locals() dict is unreliable.
+            try:
+                del m
+            except NameError:
+                pass
+            try:
+                del opt
+            except NameError:
+                pass
+            try:
+                del crit
+            except NameError:
+                pass
+            try:
+                del inp
+            except NameError:
+                pass
+            try:
+                del lbl
+            except NameError:
+                pass
+            try:
+                del out
+            except NameError:
+                pass
+            try:
+                del l
+            except NameError:
+                pass
             torch.cuda.empty_cache()
             break
 
