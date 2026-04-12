@@ -403,17 +403,19 @@ else:
 | A4 | profiler schedule(wait=1, warmup=1, active=3) is optimal for tutorial | Discretion Recommendations | Low -- standard recommendation |
 | A5 | DataLoader throughput measurement pattern | Code Examples | Low -- standard pattern |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Exact OOM batch size for PROF-02**
    - What we know: RTX 2070 has 7.6 GB VRAM. SimpleCNN with input_size=224 will use more memory than default 32.
    - What's unclear: The exact batch size that triggers OOM during backward (activations + gradients). Depends on CUDA context overhead.
    - Recommendation: Start at batch_size=256 with 224x224 input; iterate up if no OOM. Include a binary search or incremental approach in the tutorial so it adapts to different GPUs.
+   - RESOLVED: Plan 02-01 Task 2 uses batch_size=256 at 224x224 with OOM catch-and-retry pattern (halves batch on failure). Adapts to any GPU.
 
 2. **profiler_output directory and .gitignore creation**
    - What we know: D-08 requires `profiler_output/` with .gitignore. Currently no .gitignore exists in repo.
    - What's unclear: Should .gitignore cover only profiler_output or also __pycache__ and other standard ignores?
    - Recommendation: Create a comprehensive .gitignore (Python + profiler artifacts) as a Wave 0 / infrastructure task.
+   - RESOLVED: Plan 02-01 Task 1 creates comprehensive .gitignore with profiler_output/, __pycache__/, and standard Python ignores.
 
 ## Environment Availability
 
