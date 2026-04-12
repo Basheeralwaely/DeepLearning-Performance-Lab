@@ -16,11 +16,11 @@ Every tutorial must be runnable, well-logged, and teach one specific performance
 - [x] Repo organized by technique (one folder per technique) — Validated in Phase 1: Repository Foundation
 - [x] Measurable performance comparisons (before/after benchmarks in each tutorial) — Validated in Phase 1: Repository Foundation
 - [x] Profiling tutorials (PyTorch profiler, bottleneck analysis, memory tracking) — Validated in Phase 2: Profiling & Diagnostics
+- [x] Mixed precision training tutorials (FP16/BF16, AMP, loss scaling) — Validated in Phase 3: Mixed Precision Training
 
 ### Active
 
 - [ ] Multi-GPU distributed training tutorials (DDP, FSDP, model/data parallelism)
-- [ ] Mixed precision training tutorials (FP16/BF16, AMP, loss scaling)
 - [ ] TensorRT acceleration tutorials (model export, optimization, benchmarking)
 - [ ] Pruning tutorials (structured/unstructured pruning, magnitude-based, iterative)
 - [ ] Quantization tutorials (post-training quantization, quantization-aware training, INT8)
@@ -75,4 +75,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-12 after Phase 2 completion*
+*Last updated: 2026-04-12 after Phase 3 completion*
