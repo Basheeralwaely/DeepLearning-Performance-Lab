@@ -62,3 +62,19 @@ def print_device_info() -> None:
     print(f"  PyTorch:       {torch.__version__}")
     print("=" * 50)
     print()
+
+
+def get_gpu_capability() -> tuple[int, int] | None:
+    """Return (major, minor) CUDA compute capability, or None if no GPU.
+
+    Useful for determining hardware support levels:
+      - SM 8.9+ (Ada/Hopper): FP8 native support
+      - SM 8.0+ (Ampere): BF16 native support
+      - SM 7.x (Turing/Volta): FP16 native, BF16 emulated
+
+    Returns:
+        Tuple of (major, minor) compute capability ints, or None.
+    """
+    if not torch.cuda.is_available():
+        return None
+    return torch.cuda.get_device_capability(0)

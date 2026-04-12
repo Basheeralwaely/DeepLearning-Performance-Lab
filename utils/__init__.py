@@ -9,8 +9,8 @@ This package provides common helpers used across all tutorials:
 
 from utils.logging_config import setup_logging
 from utils.benchmark import benchmark, compare_results, print_benchmark_table
-from utils.models import SimpleCNN, SimpleMLP, get_sample_batch
-from utils.device import get_device, print_device_info
+from utils.models import SimpleCNN, SimpleMLP, SimpleViT, get_sample_batch
+from utils.device import get_device, get_gpu_capability, print_device_info
 
 __all__ = [
     "setup_logging",
@@ -19,7 +19,9 @@ __all__ = [
     "print_benchmark_table",
     "SimpleCNN",
     "SimpleMLP",
+    "SimpleViT",
     "get_sample_batch",
     "get_device",
+    "get_gpu_capability",
     "print_device_info",
 ]

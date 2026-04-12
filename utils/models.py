@@ -104,6 +104,98 @@ class SimpleMLP(nn.Module):
         return self.layers(x)
 
 
+class SimpleViT(nn.Module):
+    """A minimal Vision Transformer for mixed precision tutorial demos.
+
+    Designed for Transformer Engine FP8 compatibility: all Linear layer
+    dimensions are divisible by 16.
+
+    Args:
+        image_size: Input image spatial dimension (square). Default: 32.
+        patch_size: Size of each patch (must divide image_size). Default: 4.
+        num_classes: Number of output classes. Default: 10.
+        dim: Hidden/embedding dimension (divisible by 16). Default: 256.
+        depth: Number of transformer encoder layers. Default: 4.
+        heads: Number of attention heads. Default: 8.
+        mlp_dim: FFN hidden dimension (divisible by 16). Default: 512.
+    """
+
+    def __init__(
+        self,
+        image_size: int = 32,
+        patch_size: int = 4,
+        num_classes: int = 10,
+        dim: int = 256,
+        depth: int = 4,
+        heads: int = 8,
+        mlp_dim: int = 512,
+    ) -> None:
+        super().__init__()
+        assert image_size % patch_size == 0, (
+            f"image_size ({image_size}) must be divisible by patch_size ({patch_size})"
+        )
+        assert dim % heads == 0, (
+            f"dim ({dim}) must be divisible by heads ({heads})"
+        )
+
+        num_patches = (image_size // patch_size) ** 2
+
+        # Patch embedding: conv2d acts as linear projection of flattened patches
+        self.patch_embed = nn.Conv2d(
+            3, dim, kernel_size=patch_size, stride=patch_size
+        )
+
+        # Learnable class token and positional embeddings
+        self.cls_token = nn.Parameter(torch.randn(1, 1, dim))
+        self.pos_embed = nn.Parameter(torch.randn(1, num_patches + 1, dim))
+
+        # Transformer encoder with Pre-LN (norm_first=True)
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=dim,
+            nhead=heads,
+            dim_feedforward=mlp_dim,
+            batch_first=True,
+            norm_first=True,
+        )
+        self.transformer = nn.TransformerEncoder(
+            encoder_layer, num_layers=depth
+        )
+
+        # Classification head applied to class token
+        self.norm = nn.LayerNorm(dim)
+        self.head = nn.Linear(dim, num_classes)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass returning logits.
+
+        Args:
+            x: Input tensor of shape (batch, 3, image_size, image_size).
+
+        Returns:
+            Logits tensor of shape (batch, num_classes).
+        """
+        # Patch embedding: (B, 3, H, W) -> (B, dim, H/P, W/P) -> (B, num_patches, dim)
+        x = self.patch_embed(x)
+        x = x.flatten(2).transpose(1, 2)
+
+        # Prepend class token
+        batch_size = x.size(0)
+        cls_tokens = self.cls_token.expand(batch_size, -1, -1)
+        x = torch.cat([cls_tokens, x], dim=1)
+
+        # Add positional embeddings
+        x = x + self.pos_embed
+
+        # Transformer encoder
+        x = self.transformer(x)
+
+        # Extract class token and classify
+        cls_output = x[:, 0]
+        cls_output = self.norm(cls_output)
+        logits = self.head(cls_output)
+        return logits
+
+
 def get_sample_batch(
     batch_size: int = 32,
     channels: int = 3,
