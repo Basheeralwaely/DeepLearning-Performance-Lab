@@ -31,8 +31,8 @@ This roadmap delivers a complete set of performance-focused PyTorch tutorials, s
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Folder structure + shared utils package
-- [ ] 01-02-PLAN.md — Reference tutorial + README navigation
+- [x] 01-01-PLAN.md — Folder structure + shared utils package
+- [x] 01-02-PLAN.md — Reference tutorial + README navigation
 
 ### Phase 2: Profiling & Diagnostics
 **Goal**: Users can identify and measure performance bottlenecks before applying optimizations
