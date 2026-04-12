@@ -303,6 +303,24 @@ def main():
     # Compare compile speedup: clean model vs graph-broken model
     logger.info("\n  Comparing compile speedup of clean vs graph-broken model:")
 
+    # Measure eager baseline for broken model so we compare apples-to-apples.
+    # Using eager_time (from SimpleCNN) for the broken model would conflate
+    # architectural differences with the effect of graph breaks.
+    with torch.inference_mode():
+        for _ in range(NUM_WARMUP):
+            _ = broken_model(x)
+
+    @benchmark
+    def broken_eager():
+        with torch.inference_mode():
+            for _ in range(NUM_TIMED):
+                _ = broken_model(x)
+            if device.type == "cuda":
+                torch.cuda.synchronize()
+
+    broken_eager_result = broken_eager()
+    broken_eager_time = broken_eager_result["time_seconds"]
+
     dynamo.reset()
     compiled_clean = torch.compile(model, mode="default")
     with torch.inference_mode():
@@ -338,9 +356,9 @@ def main():
     compare_results(clean_result, broken_result, "Graph Breaks Impact")
 
     clean_speedup = eager_time / clean_result["time_seconds"] if clean_result["time_seconds"] > 0 else float("inf")
-    broken_speedup = eager_time / broken_result["time_seconds"] if broken_result["time_seconds"] > 0 else float("inf")
+    broken_speedup = broken_eager_time / broken_result["time_seconds"] if broken_result["time_seconds"] > 0 else float("inf")
     logger.info(f"  Clean model compile speedup vs eager: {clean_speedup:.2f}x")
-    logger.info(f"  Broken model compile speedup vs eager: {broken_speedup:.2f}x")
+    logger.info(f"  Broken model compile speedup vs its own eager: {broken_speedup:.2f}x")
     logger.info(
         "  Graph breaks reduce the compiler's ability to optimize, "
         "resulting in less speedup (or even slowdown)."
