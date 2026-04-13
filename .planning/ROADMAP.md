@@ -73,8 +73,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md — Structured and unstructured pruning tutorial with iterative fine-tuning
+- [ ] 04-02-PLAN.md — Knowledge distillation tutorial with teacher-student compression
 
 ### Phase 5: Inference Optimization
 **Goal**: Users can accelerate model inference using export and compilation techniques
