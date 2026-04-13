@@ -58,6 +58,7 @@ BATCH_SIZE = 64
 NUM_INFERENCE_ITERATIONS = 100
 FINE_TUNE_EPOCHS = 2
 LEARNING_RATE = 0.001
+NUM_VAL_BATCHES = 5
 
 
 # ---------------------------------------------------------------
@@ -148,6 +149,33 @@ def fine_tune(model, device, epochs, lr):
         loss.backward()
         optimizer.step()
         logger.info(f"  Epoch {epoch + 1}/{epochs} -- loss: {loss.item():.4f}")
+
+
+def evaluate_accuracy(model, device, num_batches):
+    """Evaluate model accuracy on synthetic validation data.
+
+    Runs inference on fixed synthetic batches and computes the fraction
+    of predictions (argmax of logits) matching synthetic labels.
+
+    Args:
+        model: Model in eval mode.
+        device: Target device.
+        num_batches: Number of synthetic batches to evaluate on.
+
+    Returns:
+        float: Accuracy as a fraction (0.0 to 1.0).
+    """
+    model.eval()
+    correct = 0
+    total = 0
+    with torch.inference_mode():
+        for _ in range(num_batches):
+            inputs, labels = get_sample_batch(batch_size=BATCH_SIZE, device=device)
+            logits = model(inputs)
+            preds = logits.argmax(dim=1)
+            correct += (preds == labels).sum().item()
+            total += labels.size(0)
+    return correct / total if total > 0 else 0.0
 
 
 def build_pruned_model(original_model, prune_ratio, device):
@@ -265,6 +293,10 @@ def main():
         f"for {NUM_INFERENCE_ITERATIONS} iterations"
     )
 
+    # Measure baseline accuracy
+    baseline_acc = evaluate_accuracy(baseline_model, device, NUM_VAL_BATCHES)
+    logger.info(f"Baseline accuracy: {baseline_acc * 100:.1f}%")
+
     # Collect all results for final comparison tables
     bench_results = [
         {
@@ -278,6 +310,7 @@ def main():
             "name": "Baseline (no pruning)",
             "param_count": baseline_size["param_count"],
             "file_size_mb": baseline_size["file_size_mb"],
+            "accuracy": baseline_acc,
         }
     ]
 
@@ -347,6 +380,10 @@ def main():
         bench = run_inference(model_copy, inputs, NUM_INFERENCE_ITERATIONS)
         logger.info(f"  Inference: {bench['time_seconds']:.4f}s")
 
+        # Measure accuracy after pruning
+        acc = evaluate_accuracy(model_copy, device, NUM_VAL_BATCHES)
+        logger.info(f"  Accuracy: {acc * 100:.1f}%")
+
         label = f"Unstructured {int(sparsity * 100)}%"
         bench_results.append({
             "name": label,
@@ -357,6 +394,7 @@ def main():
             "name": label,
             "param_count": size_info["param_count"],
             "file_size_mb": size_info["file_size_mb"],
+            "accuracy": acc,
         })
 
     # Critical explanation about unstructured pruning and inference speed
@@ -409,6 +447,10 @@ def main():
         bench = run_inference(pruned_model, inputs, NUM_INFERENCE_ITERATIONS)
         logger.info(f"  Inference: {bench['time_seconds']:.4f}s")
 
+        # Measure accuracy after pruning
+        acc = evaluate_accuracy(pruned_model, device, NUM_VAL_BATCHES)
+        logger.info(f"  Accuracy: {acc * 100:.1f}%")
+
         label = f"Structured {int(prune_ratio * 100)}% removed"
         bench_results.append({
             "name": label,
@@ -419,6 +461,7 @@ def main():
             "name": label,
             "param_count": size_info["param_count"],
             "file_size_mb": size_info["file_size_mb"],
+            "accuracy": acc,
         })
 
     # ==============================================================
@@ -430,17 +473,19 @@ def main():
 
     # Model size comparison table
     print("--- Model Size Comparison ---\n")
-    print(f"+{'-' * 32}+{'-' * 14}+{'-' * 16}+")
+    print(f"+{'-' * 32}+{'-' * 14}+{'-' * 16}+{'-' * 12}+")
     print(
-        f"| {'Configuration':<30} | {'Params':>12} | {'File Size (MB)':>14} |"
+        f"| {'Configuration':<30} | {'Params':>12} | {'File Size (MB)':>14} | "
+        f"{'Accuracy':>10} |"
     )
-    print(f"+{'-' * 32}+{'-' * 14}+{'-' * 16}+")
+    print(f"+{'-' * 32}+{'-' * 14}+{'-' * 16}+{'-' * 12}+")
     for r in size_results:
         print(
             f"| {r['name']:<30} | {r['param_count']:>12,} | "
-            f"{r['file_size_mb']:>14.2f} |"
+            f"{r['file_size_mb']:>14.2f} | "
+            f"{r.get('accuracy', 0) * 100:>9.1f}% |"
         )
-    print(f"+{'-' * 32}+{'-' * 14}+{'-' * 16}+")
+    print(f"+{'-' * 32}+{'-' * 14}+{'-' * 16}+{'-' * 12}+")
 
     # Inference speed comparison table
     print("\n--- Inference Speed Comparison ---\n")
@@ -459,7 +504,7 @@ def main():
         "smaller tensors and real speedup"
     )
     logger.info(
-        "3. Fine-tuning after pruning helps recover lost performance "
+        "3. Fine-tuning after pruning helps recover accuracy "
         "(iterative prune-then-fine-tune)"
     )
     logger.info(
