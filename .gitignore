@@ -14,3 +14,9 @@ profiler_output/
 .idea/
 *.swp
 *.swo
+
+# Planning & Claude config (local only)
+.planning/
+.claude/
+
+CLAUDE.md
