@@ -74,7 +74,7 @@ class TeacherCNN(nn.Module):
     as the knowledge source for distillation.
     """
 
-    def __init__(self):
+    def __init__(self, input_size=INPUT_SIZE):
         super().__init__()
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, padding=1),
@@ -87,7 +87,8 @@ class TeacherCNN(nn.Module):
             nn.ReLU(inplace=True),
             nn.MaxPool2d(2),
         )
-        flat_dim = 256 * 4 * 4  # 4096 after 3x MaxPool2d on 32x32
+        reduced_size = input_size // 8  # 3x MaxPool2d(2) halves each dim
+        flat_dim = 256 * reduced_size * reduced_size
         self.classifier = nn.Sequential(
             nn.Linear(flat_dim, 512),
             nn.ReLU(inplace=True),
@@ -107,7 +108,7 @@ class StudentCNN(nn.Module):
     producing a compact model suitable as the distillation target.
     """
 
-    def __init__(self):
+    def __init__(self, input_size=INPUT_SIZE):
         super().__init__()
         self.features = nn.Sequential(
             nn.Conv2d(3, 16, kernel_size=3, padding=1),
@@ -120,7 +121,8 @@ class StudentCNN(nn.Module):
             nn.ReLU(inplace=True),
             nn.MaxPool2d(2),
         )
-        flat_dim = 64 * 4 * 4  # 1024 after 3x MaxPool2d on 32x32
+        reduced_size = input_size // 8  # 3x MaxPool2d(2) halves each dim
+        flat_dim = 64 * reduced_size * reduced_size
         self.classifier = nn.Sequential(
             nn.Linear(flat_dim, 128),
             nn.ReLU(inplace=True),
