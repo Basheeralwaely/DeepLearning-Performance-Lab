@@ -61,6 +61,29 @@ LEARNING_RATE = 0.001
 
 
 # ---------------------------------------------------------------
+# Model definitions
+# ---------------------------------------------------------------
+
+class PrunedCNN(nn.Module):
+    """A structurally pruned CNN with physically smaller layers.
+
+    Used by build_pruned_model() to produce a proper nn.Module subclass
+    (instead of monkey-patching forward on a bare nn.Module), ensuring
+    compatibility with torch.jit.script, torch.compile, and serialization.
+    """
+
+    def __init__(self, features, classifier):
+        super().__init__()
+        self.features = features
+        self.classifier = classifier
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        return self.classifier(x)
+
+
+# ---------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------
 
@@ -191,20 +214,8 @@ def build_pruned_model(original_model, prune_ratio, device):
         nn.MaxPool2d(2),
     )
 
-    # Build complete model
-    new_model = nn.Module()
-    new_model.features = new_features
-    new_model.classifier = copy.deepcopy(temp_model.classifier)
-
-    # Add forward method
-    def forward(self, x):
-        x = self.features(x)
-        x = x.view(x.size(0), -1)
-        x = self.classifier(x)
-        return x
-
-    import types
-    new_model.forward = types.MethodType(forward, new_model)
+    # Build complete model using proper nn.Module subclass
+    new_model = PrunedCNN(new_features, copy.deepcopy(temp_model.classifier))
 
     return new_model.to(device)
 
@@ -324,7 +335,7 @@ def main():
         logger.info(
             f"  Sparsity {int(sparsity * 100)}%: "
             f"{zero_weights:,} / {total_weights:,} weights are zero "
-            f"({zero_weights / total_weights * 100:.1f}% actual sparsity)"
+            f"({(zero_weights / total_weights * 100) if total_weights > 0 else 0.0:.1f}% actual sparsity)"
         )
         logger.info(
             f"  Parameters: {size_info['param_count']:,} (unchanged -- "
