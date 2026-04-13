@@ -268,15 +268,11 @@ ALPHA = 0.7         # Weight soft targets heavily (they carry more information)
 | A3 | T=4.0, alpha=0.7 are good defaults for distillation demo | Code Examples | Low -- well-established defaults from Hinton et al. |
 | A4 | Synthetic data is sufficient to demonstrate compression metrics | Pitfalls | Low -- consistent with Phases 1-3 approach |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Teacher/student variant placement**
-   - What we know: D-05 says either utils/models.py or inline in tutorial
-   - Recommendation: Define inline in the distillation tutorial. Teacher and student are tutorial-specific concepts, not reusable utilities. Keeps utils/models.py clean.
+1. **Teacher/student variant placement** — RESOLVED: Define inline in the distillation tutorial. Teacher and student are tutorial-specific concepts, not reusable utilities. Keeps utils/models.py clean. (Implemented in 04-02-PLAN.md)
 
-2. **Structured pruning scope for SimpleCNN**
-   - What we know: SimpleCNN has 3 conv layers. Structured pruning on features.0 requires adjusting features.3. Pruning features.6 requires adjusting classifier.0.
-   - Recommendation: Demonstrate structured pruning on features.0 (32 channels -> 16 channels), propagating the change to features.3 input. This is the simplest chain to illustrate. Mention that the same approach applies to deeper layers.
+2. **Structured pruning scope for SimpleCNN** — RESOLVED: Demonstrate structured pruning on features.0 (32 channels -> 16 channels), propagating the change to features.3 input. This is the simplest chain to illustrate. Mention that the same approach applies to deeper layers. (Implemented in 04-01-PLAN.md)
 
 ## Environment Availability
 
