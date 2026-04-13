@@ -70,11 +70,12 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. User can run pruning tutorial and see structured/unstructured pruning applied with sparsity levels, accuracy impact, and inference speedup logged
   2. User can run distillation tutorial and see a smaller student model trained from a teacher with accuracy and speed comparisons
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Structured and unstructured pruning tutorial with iterative fine-tuning
-- [ ] 04-02-PLAN.md — Knowledge distillation tutorial with teacher-student compression
+- [x] 04-01-PLAN.md — Structured and unstructured pruning tutorial with iterative fine-tuning
+- [x] 04-02-PLAN.md — Knowledge distillation tutorial with teacher-student compression
+- [ ] 04-03-PLAN.md — Gap closure: add accuracy evaluation to both tutorials
 
 ### Phase 5: Inference Optimization
 **Goal**: Users can accelerate model inference using export and compilation techniques
@@ -116,6 +117,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Repository Foundation | 0/2 | Not started | - |
 | 2. Profiling & Diagnostics | 0/2 | Not started | - |
 | 3. Mixed Precision Training | 0/2 | Not started | - |
-| 4. Model Compression | 0/2 | Not started | - |
+| 4. Model Compression | 0/3 | Not started | - |
 | 5. Inference Optimization | 0/2 | Not started | - |
 | 6. Distributed Training | 0/3 | Not started | - |
