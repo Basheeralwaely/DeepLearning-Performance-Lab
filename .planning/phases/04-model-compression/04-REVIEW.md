@@ -1,95 +1,73 @@
 ---
 phase: 04-model-compression
-reviewed: 2026-04-13T12:00:00Z
+reviewed: 2026-04-13T14:00:00Z
 depth: standard
 files_reviewed: 2
 files_reviewed_list:
-  - pruning/structured_unstructured_pruning.py
   - compression/knowledge_distillation.py
+  - pruning/structured_unstructured_pruning.py
 findings:
   critical: 0
-  warning: 3
+  warning: 1
   info: 2
-  total: 5
+  total: 3
 status: issues_found
 ---
 
 # Phase 04: Code Review Report
 
-**Reviewed:** 2026-04-13T12:00:00Z
+**Reviewed:** 2026-04-13T14:00:00Z
 **Depth:** standard
 **Files Reviewed:** 2
 **Status:** issues_found
 
 ## Summary
 
-Reviewed two new tutorial files for the model compression phase: a pruning tutorial covering structured vs unstructured approaches, and a knowledge distillation tutorial implementing Hinton-style teacher-student compression. Both files are well-structured, have excellent inline documentation, and follow the project conventions (standalone .py files with rich logging output). No security issues or critical bugs found. Three warnings relate to fragile model construction, hardcoded dimension assumptions, and a missing division guard. Two info items cover minor code quality issues.
+Re-reviewed both model compression tutorials after previous fixes (commits 3367bed, f39ee8a) addressed WR-01 (monkey-patched forward), WR-02 (hardcoded flat_dim), and WR-03 (missing zero-division guard). All three prior warnings are confirmed resolved. The code is now well-structured with proper nn.Module subclassing, dynamic dimension computation, and defensive arithmetic.
+
+One new warning was found: the pruning tutorial's `measure_model_size` lacks a try/finally guard for temp file cleanup (inconsistent with the identical function in the distillation tutorial which handles this correctly). Two informational items remain: a missing edge-case guard in `build_pruned_model` and a mildly misleading variable name.
 
 ## Warnings
 
-### WR-01: Fragile Model Construction via Monkey-Patched forward Method
+### WR-01: Missing try/finally for temp file cleanup in measure_model_size
 
-**File:** `pruning/structured_unstructured_pruning.py:195-208`
-**Issue:** `build_pruned_model` creates a bare `nn.Module()` and attaches a `forward` method at runtime using `types.MethodType`. This bypasses PyTorch's module registration patterns and will fail with `torch.jit.script`, `torch.compile`, `torch.export`, or any tool that inspects the class definition for `forward`. It also makes the model harder to serialize/deserialize correctly.
-**Fix:** Define a proper subclass instead of monkey-patching:
+**File:** `pruning/structured_unstructured_pruning.py:101-106`
+**Issue:** The `measure_model_size` function creates a named temporary file but does not wrap `torch.save` / `os.path.getsize` in a try/finally block. If either call raises, the temp file leaks on disk. The same function in `compression/knowledge_distillation.py` (lines 150-158) correctly uses try/finally, making this an inconsistency between the two tutorials.
+**Fix:**
 ```python
-class PrunedCNN(nn.Module):
-    def __init__(self, features, classifier):
-        super().__init__()
-        self.features = features
-        self.classifier = classifier
-
-    def forward(self, x):
-        x = self.features(x)
-        x = x.view(x.size(0), -1)
-        return self.classifier(x)
-
-# Then in build_pruned_model:
-new_model = PrunedCNN(new_features, copy.deepcopy(temp_model.classifier))
-return new_model.to(device)
-```
-
-### WR-02: Hardcoded flat_dim Assumes INPUT_SIZE=32
-
-**File:** `compression/knowledge_distillation.py:90,123`
-**Issue:** Both `TeacherCNN` and `StudentCNN` hardcode `flat_dim` based on the assumption that input is 32x32 (e.g., `256 * 4 * 4`). The constant `INPUT_SIZE = 32` exists at module level but is not used in the model constructors. If `INPUT_SIZE` is changed, the models will crash at runtime with a tensor shape mismatch in the classifier's first Linear layer, with no clear error message pointing to the root cause.
-**Fix:** Compute `flat_dim` dynamically from `INPUT_SIZE`, or accept `input_size` as a constructor parameter (matching the pattern in `utils/models.py`'s `SimpleCNN`):
-```python
-class TeacherCNN(nn.Module):
-    def __init__(self, input_size=INPUT_SIZE):
-        super().__init__()
-        # ... features unchanged ...
-        reduced_size = input_size // 8  # 3x MaxPool2d(2)
-        flat_dim = 256 * reduced_size * reduced_size
-        self.classifier = nn.Sequential(
-            nn.Linear(flat_dim, 512),
-            nn.ReLU(inplace=True),
-            nn.Linear(512, NUM_CLASSES),
-        )
-```
-
-### WR-03: Potential ZeroDivisionError in Sparsity Calculation
-
-**File:** `pruning/structured_unstructured_pruning.py:328`
-**Issue:** `zero_weights / total_weights * 100` has no guard against `total_weights == 0`. While this is unlikely with `SimpleCNN`, the function operates on a deep-copied model after pruning, and defensive coding would prevent a confusing crash if the model structure changes.
-**Fix:** Add a guard:
-```python
-actual_sparsity = (zero_weights / total_weights * 100) if total_weights > 0 else 0.0
+def measure_model_size(model):
+    param_count = sum(p.numel() for p in model.parameters())
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pt")
+    tmp_path = tmp.name
+    tmp.close()
+    try:
+        torch.save(model.state_dict(), tmp_path)
+        file_size_mb = os.path.getsize(tmp_path) / (1024 * 1024)
+    finally:
+        os.unlink(tmp_path)
+    return {"param_count": param_count, "file_size_mb": file_size_mb}
 ```
 
 ## Info
 
-### IN-01: Import Statement Inside Function Body
+### IN-01: No guard against zero surviving channels in build_pruned_model
 
-**File:** `pruning/structured_unstructured_pruning.py:206`
-**Issue:** `import types` is placed inside `build_pruned_model()` rather than at the top of the file with other imports. This is a minor style issue but deviates from Python convention (PEP 8) and makes the dependency less discoverable. Note: this import becomes unnecessary if WR-01 is addressed.
-**Fix:** Move `import types` to the top-level imports block, or remove entirely if WR-01's fix is adopted.
+**File:** `pruning/structured_unstructured_pruning.py:209`
+**Issue:** If `prune_ratio` is 1.0 or close enough that all channels are removed, `num_surviving` would be 0, causing `nn.Conv2d(3, 0, ...)` to fail with a cryptic error. Current callers only use [0.25, 0.5] so this is not triggered, but a defensive check would improve robustness for future use.
+**Fix:** Add after line 209:
+```python
+if num_surviving == 0:
+    raise ValueError(
+        f"All channels pruned at ratio {prune_ratio}. "
+        f"Reduce prune_ratio to keep at least one channel."
+    )
+```
 
-### IN-02: Misleading Variable Name for Speed Comparison
+### IN-02: Misleading variable name for speed comparison
 
-**File:** `compression/knowledge_distillation.py:448-452`
-**Issue:** The variable `speed_ratio` actually computes a percentage (distilled time / teacher time * 100), not a ratio. The log message uses it correctly ("of teacher's inference time"), but the variable name could confuse future maintainers.
-**Fix:** Rename to `speed_pct` or `inference_time_pct` for clarity:
+**File:** `compression/knowledge_distillation.py:489`
+**Issue:** The variable `speed_ratio` computes a percentage (distilled time / teacher time * 100), not a ratio. The log message on line 496 uses it correctly as a percentage, but the name could confuse maintainers.
+**Fix:** Rename to `inference_time_pct` for clarity:
 ```python
 inference_time_pct = (
     distill_bench["time_seconds"] / teacher_bench["time_seconds"] * 100
@@ -100,6 +78,6 @@ inference_time_pct = (
 
 ---
 
-_Reviewed: 2026-04-13T12:00:00Z_
+_Reviewed: 2026-04-13T14:00:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
