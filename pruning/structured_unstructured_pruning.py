@@ -98,11 +98,14 @@ def measure_model_size(model):
         dict with 'param_count' (int) and 'file_size_mb' (float).
     """
     param_count = sum(p.numel() for p in model.parameters())
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pt") as f:
-        torch.save(model.state_dict(), f.name)
-        file_size_mb = os.path.getsize(f.name) / (1024 * 1024)
-        tmp_path = f.name
-    os.unlink(tmp_path)
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pt")
+    tmp_path = tmp.name
+    tmp.close()
+    try:
+        torch.save(model.state_dict(), tmp_path)
+        file_size_mb = os.path.getsize(tmp_path) / (1024 * 1024)
+    finally:
+        os.unlink(tmp_path)
     return {"param_count": param_count, "file_size_mb": file_size_mb}
 
 
