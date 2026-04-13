@@ -21,10 +21,10 @@ Every tutorial must be runnable, well-logged, and teach one specific performance
 - [x] Knowledge distillation tutorials (teacher-student, soft labels, accuracy comparison) — Validated in Phase 4: Model Compression
 - [x] TensorRT acceleration tutorials (model export, FP16 optimization, benchmarking) — Validated in Phase 5: Inference Optimization
 - [x] Inference optimization tutorials (TorchScript JIT, ONNX Runtime, export pipelines) — Validated in Phase 5: Inference Optimization
+- [x] Multi-GPU distributed training tutorials (DDP, FSDP, model/data parallelism) — Validated in Phase 6: Distributed Training
 
 ### Active
 
-- [ ] Multi-GPU distributed training tutorials (DDP, FSDP, model/data parallelism)
 - [ ] Quantization tutorials (post-training quantization, quantization-aware training, INT8)
 
 ### Out of Scope
@@ -76,4 +76,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-13 after Phase 5 completion*
+*Last updated: 2026-04-13 after Phase 6 completion*
