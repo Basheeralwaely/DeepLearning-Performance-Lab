@@ -75,7 +75,7 @@ Plans:
 Plans:
 - [x] 04-01-PLAN.md — Structured and unstructured pruning tutorial with iterative fine-tuning
 - [x] 04-02-PLAN.md — Knowledge distillation tutorial with teacher-student compression
-- [ ] 04-03-PLAN.md — Gap closure: add accuracy evaluation to both tutorials
+- [x] 04-03-PLAN.md — Gap closure: add accuracy evaluation to both tutorials
 
 ### Phase 5: Inference Optimization
 **Goal**: Users can accelerate model inference using export and compilation techniques

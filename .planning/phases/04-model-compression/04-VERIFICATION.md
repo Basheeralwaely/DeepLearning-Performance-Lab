@@ -1,173 +1,157 @@
 ---
 phase: 04-model-compression
-verified: 2026-04-13T13:00:00Z
-status: gaps_found
-score: 6/8 must-haves verified
+verified: 2026-04-13T14:00:00Z
+status: passed
+score: 2/2 must-haves verified
 overrides_applied: 0
-gaps:
-  - truth: "User can run pruning tutorial and see structured/unstructured pruning applied with sparsity levels, accuracy impact, and inference speedup logged"
-    status: partial
-    reason: "Roadmap SC1 requires 'accuracy impact' to be logged. The pruning tutorial explicitly omits accuracy tracking per decision D-10. Sparsity levels and inference speedup are correctly logged, but accuracy impact (how much accuracy degrades at each sparsity level) is absent from all output."
-    artifacts:
-      - path: "pruning/structured_unstructured_pruning.py"
-        issue: "No accuracy measurement or logging anywhere in the tutorial. The file correctly measures param count, file size, and inference speed but never evaluates classification accuracy before and after pruning. D-10 was a deliberate decision but it conflicts with the roadmap success criterion."
-    missing:
-      - "Add accuracy evaluation after each pruning level: run forward pass on a fixed synthetic validation set, compute fraction of correct predictions, and log 'Accuracy: X.X%' before and after pruning"
-      - "Alternatively, get an explicit roadmap amendment acknowledging D-10 supersedes SC1's 'accuracy impact' requirement — in that case add an override entry to this VERIFICATION.md"
-
-  - truth: "User can run distillation tutorial and see a smaller student model trained from a teacher with accuracy and speed comparisons"
-    status: partial
-    reason: "Roadmap SC2 requires 'accuracy and speed comparisons'. The distillation tutorial shows a three-way speed and size comparison but omits accuracy entirely. D-10 excluded accuracy tracking, conflicting with the roadmap contract."
-    artifacts:
-      - path: "compression/knowledge_distillation.py"
-        issue: "Three-way comparison table shows param count, file size, and inference speed only. Accuracy of teacher vs student-from-scratch vs distilled-student is not measured or logged anywhere. The roadmap success criterion explicitly includes 'accuracy' as a required comparison dimension."
-    missing:
-      - "Add a simple accuracy evaluation after each model is trained: run inference on a fixed set of synthetic batches, compute top-1 accuracy, and include in the three-way comparison output"
-      - "Alternatively, get an explicit roadmap amendment acknowledging D-10 supersedes SC2's 'accuracy' requirement — add an override entry to this VERIFICATION.md"
+re_verification:
+  previous_status: gaps_found
+  previous_score: 6/8
+  gaps_closed:
+    - "User can run pruning tutorial and see structured/unstructured pruning applied with sparsity levels, accuracy impact, and inference speedup logged"
+    - "User can run distillation tutorial and see a smaller student model trained from a teacher with accuracy and speed comparisons"
+  gaps_remaining: []
+  regressions: []
 ---
 
 # Phase 4: Model Compression Verification Report
 
 **Phase Goal:** Users can reduce model size while preserving accuracy using pruning and distillation
-**Verified:** 2026-04-13T13:00:00Z
-**Status:** gaps_found
-**Re-verification:** No — initial verification
+**Verified:** 2026-04-13T14:00:00Z
+**Status:** passed
+**Re-verification:** Yes — after gap closure by Plan 03
 
 ## Goal Achievement
 
-### Observable Truths
-
-The roadmap defines 2 success criteria. Each plan adds 4 truths. The PLAN truths are verified against the codebase separately below; the roadmap SCs are the binding contract.
-
-#### Roadmap Success Criteria (Binding Contract)
+### Observable Truths (Roadmap Success Criteria — Binding Contract)
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|---------|
-| SC1 | User can run pruning tutorial and see structured/unstructured pruning applied with sparsity levels, accuracy impact, and inference speedup logged | ⚠ PARTIAL | Sparsity levels (20/50/70/90%) and inference speedup verified. "accuracy impact" absent — D-10 explicitly excluded it but roadmap requires it |
-| SC2 | User can run distillation tutorial and see a smaller student model trained from a teacher with accuracy and speed comparisons | ⚠ PARTIAL | Speed and size comparisons verified. "accuracy" absent — D-10 excluded it but roadmap requires it |
+| SC1 | User can run pruning tutorial and see structured/unstructured pruning applied with sparsity levels, accuracy impact, and inference speedup logged | ✓ VERIFIED | `evaluate_accuracy()` added (line 154); `baseline_acc` logged (line 298); accuracy logged in unstructured loop (lines 384-385) and structured loop (lines 451-452); `Accuracy` column in model size table (line 479) |
+| SC2 | User can run distillation tutorial and see a smaller student model trained from a teacher with accuracy and speed comparisons | ✓ VERIFIED | `evaluate_accuracy()` added (line 204); `teacher_acc` (line 328), `scratch_acc` (line 360), `distill_acc` (line 414) all logged; `Accuracy` column in three-way comparison table (line 447); accuracy in summary log (line 497) |
 
-**Roadmap SC Score:** 0/2 fully verified (2/2 partial — core behavior works but accuracy dimension missing)
+**Roadmap SC Score:** 2/2 — both fully verified
 
-#### Plan 01 Must-Have Truths (COMP-01, Pruning)
+### Re-verification Focus: Gap Closure Evidence
 
-| # | Truth | Status | Evidence |
-|---|-------|--------|---------|
-| 1 | User can run the pruning tutorial and see unstructured pruning applied at multiple sparsity levels with parameter counts and inference timing logged | ✓ VERIFIED | `SPARSITY_LEVELS = [0.2, 0.5, 0.7, 0.9]` at line 56; loop at line 287 logs sparsity %, zero count, param count (unchanged), and inference time for each level |
-| 2 | User can see structured pruning physically removing channels and producing a smaller model with real inference speedup | ✓ VERIFIED | `build_pruned_model()` physically constructs smaller layers (line 171-208); param count logged as reduced vs baseline (line 391-395); inference benchmarked for each ratio |
-| 3 | User sees explicit log message explaining that unstructured pruning does NOT produce inference speedup on standard GPUs | ✓ VERIFIED | Lines 352-360: prominent `print()` block with "NOTE: Unstructured pruning does NOT reduce inference time on standard GPUs" |
-| 4 | Tutorial produces a benchmark comparison table showing model size and inference speed for original vs pruned variants | ✓ VERIFIED | Lines 422-436: formatted size table printed with `+`/`|` chars; `print_benchmark_table(bench_results)` called with all variants |
+**Gap 1 (SC1 — Accuracy impact in pruning tutorial):**
 
-**Plan 01 Score:** 4/4 truths verified
+- `evaluate_accuracy(model, device, num_batches)` function present at line 154 in `pruning/structured_unstructured_pruning.py`
+- `NUM_VAL_BATCHES = 5` constant at line 61
+- Baseline accuracy measured: `baseline_acc = evaluate_accuracy(baseline_model, device, NUM_VAL_BATCHES)` at line 297, logged at line 298
+- Accuracy captured for all 4 unstructured sparsity levels (loop body, lines 384-385): `acc = evaluate_accuracy(model_copy, device, NUM_VAL_BATCHES)` + `logger.info(f"  Accuracy: {acc * 100:.1f}%")`
+- Accuracy captured for both structured pruning ratios (25%, 50%) at lines 451-452
+- `'accuracy'` key stored in `size_results` dicts at lines 313, 397, 464 — flows to the model size comparison table at line 486
+- `Accuracy` column header present in table at line 479
+- Commits: `3bc05e0` verified in git
 
-#### Plan 02 Must-Have Truths (COMP-02, Distillation)
+**Gap 2 (SC2 — Accuracy comparisons in distillation tutorial):**
 
-| # | Truth | Status | Evidence |
-|---|-------|--------|---------|
-| 1 | User can run the distillation tutorial and see a teacher model trained, then knowledge distilled into a smaller student | ✓ VERIFIED | Sections B (train teacher), D (distill into fresh student) clearly separated; `train_model()` then `distill_knowledge()` called in sequence |
-| 2 | User sees three-way comparison: teacher, student-from-scratch, and distilled-student in benchmark output | ✓ VERIFIED | Lines 427-444: `results` list with "Teacher", "Student (scratch)", "Student (distilled)" passed to `print_benchmark_table()`; size table also shows all three |
-| 3 | User sees the distillation loss combining KL divergence (soft targets) and cross-entropy (hard labels) | ✓ VERIFIED | Lines 232-242: `F.kl_div(F.log_softmax(.../temperature), F.softmax(.../temperature)) * temperature^2 + F.cross_entropy(...)` with both components logged per epoch |
-| 4 | Tutorial produces benchmark tables showing model size and inference speed for all three models | ✓ VERIFIED | Lines 405-422: model size table (params + MB + compression ratio); lines 427-444: `print_benchmark_table` for inference speed |
+- `evaluate_accuracy(model, device, num_batches)` function present at line 204 in `compression/knowledge_distillation.py`
+- `NUM_VAL_BATCHES = 5` constant at line 65
+- Teacher accuracy: `teacher_acc = evaluate_accuracy(teacher, device, NUM_VAL_BATCHES)` at line 328, logged at line 329
+- Student-from-scratch accuracy: `scratch_acc = evaluate_accuracy(student_scratch, device, NUM_VAL_BATCHES)` at line 360, logged at line 361
+- Distilled student accuracy: `distill_acc = evaluate_accuracy(student_distilled, device, NUM_VAL_BATCHES)` at line 414, logged at line 415
+- All three accuracy values flow into `models_info` list at lines 452-454 and are rendered in the three-way comparison table
+- `Accuracy` column header in table at line 447
+- Accuracy included in final summary log at line 497
+- Commits: `c5acd7a` verified in git
 
-**Plan 02 Score:** 4/4 truths verified
+### Regression Checks (Previously-Passing Truths)
 
-**Overall Score:** 6/8 (plan-level truths all pass; 2 roadmap SCs blocked by absent accuracy tracking)
+| Previously-Passing Truth | Check | Status |
+|--------------------------|-------|--------|
+| Pruning: explicit "does NOT" speedup message | `grep "does NOT"` → line 403 | ✓ PASS |
+| Pruning: `print_benchmark_table` called | Line 492 | ✓ PASS |
+| Pruning: `prune.l1_unstructured` and `prune.ln_structured` present | Lines 341, 201 | ✓ PASS |
+| Distillation: `F.kl_div` with T^2 correction | Lines 262-266 | ✓ PASS |
+| Distillation: three-way labels "Student (scratch)", "Student (distilled)" | Lines 361, 415, 452-454 | ✓ PASS |
+| Distillation: `print_benchmark_table` called | Line 484 | ✓ PASS |
+| Both files: syntax valid | `python3 -c "import ast; ast.parse(...)"` | ✓ PASS |
+
+No regressions detected.
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `pruning/structured_unstructured_pruning.py` | Complete pruning tutorial covering unstructured and structured techniques | ✓ VERIFIED | 466 lines; contains `torch.nn.utils.prune`, both `prune.l1_unstructured` and `prune.ln_structured`, iterative fine-tune, benchmark table |
-| `compression/knowledge_distillation.py` | Complete knowledge distillation tutorial with teacher-student training | ✓ VERIFIED | 466 lines; contains `F.kl_div`, `TeacherCNN` (64->128->256), `StudentCNN` (16->32->64), three-way comparison, benchmark table |
+| `pruning/structured_unstructured_pruning.py` | Complete pruning tutorial with accuracy impact | ✓ VERIFIED | 522 lines; `evaluate_accuracy()` + `NUM_VAL_BATCHES`; accuracy logged for baseline + 4 unstructured levels + 2 structured ratios; Accuracy column in size table |
+| `compression/knowledge_distillation.py` | Complete distillation tutorial with accuracy comparisons | ✓ VERIFIED | 507 lines; `evaluate_accuracy()` + `NUM_VAL_BATCHES`; accuracy for all 3 models; Accuracy column in three-way table; accuracy in summary log |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 |------|----|-----|--------|---------|
-| `pruning/structured_unstructured_pruning.py` | `utils/models.py` | SimpleCNN import | ✓ WIRED | Line 45: `SimpleCNN` imported from utils; line 228: `SimpleCNN().to(device)` used as baseline |
-| `pruning/structured_unstructured_pruning.py` | `utils/benchmark.py` | benchmark decorator and table | ✓ WIRED | Lines 43-44: `benchmark, print_benchmark_table` imported; `@benchmark` at line 85; `print_benchmark_table(bench_results)` at line 436 |
-| `compression/knowledge_distillation.py` | `utils/benchmark.py` | benchmark decorator and table | ✓ WIRED | Lines 45-46: `benchmark, print_benchmark_table` imported; `@benchmark` at line 159; `print_benchmark_table(results)` at line 444 |
-| `compression/knowledge_distillation.py` | `utils/models.py` | get_sample_batch import | ✓ WIRED | Line 47: `get_sample_batch` imported; used in `train_model()` (line 181), `distill_knowledge()` (line 217), and inference setup (line 305) |
+| `pruning/structured_unstructured_pruning.py` | `utils/models.py` | SimpleCNN import | ✓ WIRED | Line 45: `SimpleCNN` imported; line 267: `SimpleCNN().to(device)` baseline |
+| `pruning/structured_unstructured_pruning.py` | `utils/benchmark.py` | benchmark decorator and table | ✓ WIRED | Lines 43-44: `benchmark, print_benchmark_table` imported; `@benchmark` at line 109; `print_benchmark_table` at line 492 |
+| `pruning/structured_unstructured_pruning.py` | `get_sample_batch` | generates validation batches for accuracy measurement | ✓ WIRED | `get_sample_batch` imported (line 46); called inside `evaluate_accuracy` body (line 173) for each validation batch |
+| `compression/knowledge_distillation.py` | `utils/benchmark.py` | benchmark decorator and table | ✓ WIRED | Lines 45-46: imported; `@benchmark` at line 162; `print_benchmark_table` at line 484 |
+| `compression/knowledge_distillation.py` | `utils/models.py` | get_sample_batch import | ✓ WIRED | Line 47: imported; used in `train_model`, `distill_knowledge`, `evaluate_accuracy` (line 223), and warm-up |
+| `compression/knowledge_distillation.py` | `get_sample_batch` | generates validation batches for accuracy measurement | ✓ WIRED | Called inside `evaluate_accuracy` body (line 223) for each validation batch |
+
+Note on Plan 03 `val_batches` pattern: The plan specified a `val_batches` variable pattern but the implementation uses `NUM_VAL_BATCHES` (count) passed to `evaluate_accuracy(model, device, num_batches)`. The function internally loops `get_sample_batch` for each batch. This achieves the same intent and is functionally equivalent — the wiring is confirmed.
 
 ### Data-Flow Trace (Level 4)
 
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 |----------|---------------|--------|-------------------|--------|
-| `pruning/structured_unstructured_pruning.py` | `bench_results` (benchmark timings) | `@benchmark` decorator on `run_inference()` | Yes — actual forward passes measured by decorator | ✓ FLOWING |
-| `pruning/structured_unstructured_pruning.py` | `size_results` (param counts) | `measure_model_size()` via `tempfile + torch.save` | Yes — real serialization measurement | ✓ FLOWING |
-| `compression/knowledge_distillation.py` | `results` (inference timings for table) | `@benchmark` decorator on `run_inference()` | Yes — 100 actual forward passes timed | ✓ FLOWING |
-| `compression/knowledge_distillation.py` | Model size table | `measure_model_size()` for all three models | Yes — real param count and serialized size | ✓ FLOWING |
+| `pruning/structured_unstructured_pruning.py` | `baseline_acc` / `acc` (accuracy values) | `evaluate_accuracy()` → `get_sample_batch` → `model(inputs).argmax` | Yes — real forward passes, real argmax computation | ✓ FLOWING |
+| `pruning/structured_unstructured_pruning.py` | `bench_results` (benchmark timings) | `@benchmark` on `run_inference()` | Yes — real forward pass timing | ✓ FLOWING |
+| `pruning/structured_unstructured_pruning.py` | `size_results` including `'accuracy'` key | `evaluate_accuracy()` calls + `measure_model_size()` | Yes — rendered in model size table | ✓ FLOWING |
+| `compression/knowledge_distillation.py` | `teacher_acc`, `scratch_acc`, `distill_acc` | `evaluate_accuracy()` → `get_sample_batch` → model forward | Yes — three separate evaluation calls | ✓ FLOWING |
+| `compression/knowledge_distillation.py` | `models_info` tuple including accuracy | All three accuracy variables at lines 452-454 | Yes — rendered in three-way comparison table | ✓ FLOWING |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Check | Status |
 |----------|-------|--------|
-| Pruning file syntax valid | `python -c "import ast; ast.parse(...)"` | ✓ PASS |
-| Distillation file syntax valid | `python -c "import ast; ast.parse(...)"` | ✓ PASS |
-| Pruning commits exist in git | `git show 2567f7d --stat` | ✓ PASS — feat(04-01): create structured/unstructured pruning tutorial |
-| Distillation commits exist in git | `git show 0941c61 --stat` | ✓ PASS — feat(04-02): create knowledge distillation tutorial |
-| "does NOT" message present | `grep "does NOT"` in pruning file | ✓ PASS — line 354 |
-| No accuracy/acc variable names | `grep -n "accuracy\|acc\b"` in both files | ✓ PASS — absent from both (as per D-10, but this means SC gap) |
-| F.kl_div present with temperature scaling | `grep "F.kl_div"` | ✓ PASS — line 232-236, with T^2 correction |
-| Three-way comparison in distillation | `grep "Student (scratch)\|Student (distilled)"` | ✓ PASS — lines 434, 439 |
-
-Note: Full execution spot-checks skipped — requires PyTorch runtime which may not be available in this environment. Syntax and structural checks confirm correctness.
+| Pruning file syntax valid | `python3 -c "import ast; ast.parse(...)"` | ✓ PASS |
+| Distillation file syntax valid | `python3 -c "import ast; ast.parse(...)"` | ✓ PASS |
+| evaluate_accuracy defined and called 4x in pruning | `grep -c "evaluate_accuracy"` → 4 | ✓ PASS |
+| evaluate_accuracy defined and called 4x in distillation | `grep -c "evaluate_accuracy"` → 4 | ✓ PASS |
+| Pruning gap-closure commits exist | `git show 3bc05e0` → feat(04-03): add accuracy evaluation to pruning tutorial | ✓ PASS |
+| Distillation gap-closure commits exist | `git show c5acd7a` → feat(04-03): add accuracy evaluation to distillation tutorial | ✓ PASS |
+| "Accuracy:" log in pruning tutorial (baseline + loops) | `grep -n "Accuracy:"` → lines 298, 385, 452 | ✓ PASS |
+| "Accuracy" column header in pruning size table | `grep "Accuracy" ... table header` → line 479 | ✓ PASS |
+| Teacher, scratch, distilled accuracy in distillation | lines 329, 361, 415 | ✓ PASS |
+| "Accuracy" column header in distillation table | line 447 | ✓ PASS |
+| accuracy values flow to distillation table rows | lines 452-454 unpack acc into table format | ✓ PASS |
 
 ### Requirements Coverage
 
 | Requirement | Source Plan | Description | Status | Evidence |
 |-------------|-------------|-------------|--------|---------|
-| COMP-01 | 04-01-PLAN.md | User can learn pruning techniques (structured/unstructured, magnitude-based) | ✓ SATISFIED | `pruning/structured_unstructured_pruning.py` covers both L1 unstructured and channel-removal structured pruning with `torch.nn.utils.prune` API |
-| COMP-02 | 04-02-PLAN.md | User can learn knowledge distillation for model compression | ✓ SATISFIED | `compression/knowledge_distillation.py` implements Hinton distillation with temperature scaling, KL divergence, and teacher-student pair |
+| COMP-01 | 04-01-PLAN.md, 04-03-PLAN.md | User can learn pruning techniques (structured/unstructured, magnitude-based) | ✓ SATISFIED | `pruning/structured_unstructured_pruning.py`: L1 unstructured at 4 sparsity levels, channel-removal structured at 2 ratios, iterative fine-tune, accuracy impact logged |
+| COMP-02 | 04-02-PLAN.md, 04-03-PLAN.md | User can learn knowledge distillation for model compression | ✓ SATISFIED | `compression/knowledge_distillation.py`: Hinton distillation with temperature scaling, KL divergence, three-way comparison with accuracy |
 
-No orphaned requirements: REQUIREMENTS.md maps only COMP-01 and COMP-02 to Phase 4 — both are covered by plans.
+No orphaned requirements: REQUIREMENTS.md maps only COMP-01 and COMP-02 to Phase 4. Both are satisfied. No Phase 4 requirements exist in REQUIREMENTS.md outside these two.
 
 ### Anti-Patterns Found
 
-| File | Line | Pattern | Severity | Impact |
-|------|------|---------|----------|--------|
-| `pruning/structured_unstructured_pruning.py` | 195-208 | Bare `nn.Module()` with monkey-patched `forward` via `types.MethodType` | ⚠️ Warning | Breaks `torch.jit.script`, `torch.compile`, `torch.export`. Will not affect basic inference in this tutorial but teaches a fragile pattern. Flagged in code review WR-01. |
-| `pruning/structured_unstructured_pruning.py` | 206 | `import types` inside function body | ℹ️ Info | Style deviation (PEP 8). Documented in code review IN-01. |
-| `pruning/structured_unstructured_pruning.py` | 328 | `zero_weights / total_weights` with no zero-division guard | ⚠️ Warning | Safe in practice with SimpleCNN but would crash if total_weights is 0. Flagged in code review WR-03. |
-| `compression/knowledge_distillation.py` | 90, 123 | `flat_dim` hardcoded as `256 * 4 * 4` / `64 * 4 * 4` assuming INPUT_SIZE=32 | ⚠️ Warning | `INPUT_SIZE` constant exists but is unused in model constructors. Shape mismatch crash if changed. Flagged in code review WR-02. |
-| `compression/knowledge_distillation.py` | 447-451 | Variable named `speed_ratio` actually holds a percentage value | ℹ️ Info | Misleading name; log message is correct. Flagged in code review IN-02. |
+Anti-patterns from the initial verification were resolved by the code review fix commit (documented in 04-REVIEW-FIX.md). Spot-check confirms:
 
-No blockers identified — the anti-patterns are code quality issues already captured in the code review. None prevent the tutorials from running correctly.
+| File | Pattern | Severity | Status |
+|------|---------|----------|--------|
+| `pruning/structured_unstructured_pruning.py` | `PrunedCNN` proper `nn.Module` subclass (WR-01 fix) | Resolved | `class PrunedCNN(nn.Module)` at line 68 — no monkey-patching |
+| `pruning/structured_unstructured_pruning.py` | Zero-division guard in sparsity calculation (WR-03 fix) | Resolved | Line 371: `(zero_weights / total_weights * 100) if total_weights > 0 else 0.0` |
+| `compression/knowledge_distillation.py` | `flat_dim` computed dynamically (WR-02 fix) | Resolved | Lines 91-92 and 125-126: `reduced_size = input_size // 8; flat_dim = 256 * reduced_size * reduced_size` |
+
+No new anti-patterns introduced by Plan 03 accuracy additions. The `evaluate_accuracy` helper uses standard patterns (argmax, inference_mode, zero-division guard at return).
 
 ### Human Verification Required
 
-None — all verification was achievable through static code analysis and git inspection. The tutorials would require human execution to verify runtime output format, but structural evidence is sufficient to confirm correctness.
+None. All verification was achievable through static code analysis and git inspection. The structural evidence conclusively confirms both gaps are closed and all must-haves are satisfied.
 
 ### Gaps Summary
 
-**Root Cause:** Decision D-10 in `04-CONTEXT.md` explicitly excluded accuracy tracking ("Accuracy tracking and per-layer sparsity analysis are explicitly excluded — focus stays on performance metrics"). This decision was made during planning and is reflected in both PLAN.md must_haves (which do not include accuracy) and in both implementations (which contain no accuracy measurement code).
+No gaps. Both roadmap success criteria are now fully satisfied:
 
-However, the ROADMAP.md success criteria — the binding contract — explicitly includes accuracy in both SCs:
-- SC1: "...accuracy impact, and inference speedup logged"
-- SC2: "...with accuracy and speed comparisons"
+- SC1: Pruning tutorial logs accuracy for baseline model, all 4 unstructured sparsity levels, and both structured channel-removal ratios. Accuracy column added to model size comparison table.
+- SC2: Distillation tutorial logs accuracy for teacher, student-from-scratch, and distilled-student. Accuracy column added to three-way comparison table. Summary log includes accuracy comparison.
 
-The PLAN-level must_haves narrowed the roadmap scope by dropping accuracy, but PLAN must_haves cannot override roadmap success criteria. These are two real gaps.
-
-**Resolution Options:**
-
-1. **Close the gap:** Add lightweight accuracy evaluation to both tutorials. A simple approach: run inference on a fixed set of 5 synthetic batches, compute argmax predictions, measure fraction matching the synthetic labels. This is trivially implementable and teaches the "measure what you change" principle reinforcing the roadmap's intent.
-
-2. **Accept the deviation:** If D-10 is considered a sound architectural decision (accuracy on synthetic data is meaningless), amend the roadmap success criteria to remove "accuracy" from SCs 1 and 2, then add overrides to this VERIFICATION.md.
-
-**This looks intentional.** The D-10 decision was deliberate and was surfaced in planning. To accept this deviation, add to VERIFICATION.md frontmatter:
-
-```yaml
-overrides:
-  - must_have: "User can run pruning tutorial and see structured/unstructured pruning applied with sparsity levels, accuracy impact, and inference speedup logged"
-    reason: "D-10 decision: accuracy tracking excluded because synthetic data accuracy is meaningless as a teaching signal. Size and speed metrics are the real compression story. Roadmap SC wording was not updated to reflect this planning decision."
-    accepted_by: "your-username"
-    accepted_at: "2026-04-13T00:00:00Z"
-  - must_have: "User can run distillation tutorial and see a smaller student model trained from a teacher with accuracy and speed comparisons"
-    reason: "D-10 decision: accuracy tracking excluded because synthetic data accuracy is meaningless. Three-way size and speed comparison fully demonstrates distillation value. Roadmap SC wording was not updated to reflect this planning decision."
-    accepted_by: "your-username"
-    accepted_at: "2026-04-13T00:00:00Z"
-```
+The Plan 03 gap closure was complete and correct. No gaps remain. Phase 4 goal achieved.
 
 ---
 
-_Verified: 2026-04-13T13:00:00Z_
+_Verified: 2026-04-13T14:00:00Z_
 _Verifier: Claude (gsd-verifier)_
