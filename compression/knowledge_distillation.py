@@ -62,6 +62,7 @@ LEARNING_RATE = 0.001
 NUM_INFERENCE_ITERATIONS = 100
 NUM_CLASSES = 10
 INPUT_SIZE = 32
+NUM_VAL_BATCHES = 5
 
 
 # ── Model Definitions ───────────────────────────────────────────────────────
@@ -200,6 +201,33 @@ def train_model(model, device, epochs, lr):
             )
 
 
+def evaluate_accuracy(model, device, num_batches):
+    """Evaluate model accuracy on synthetic validation data.
+
+    Runs inference on fixed synthetic batches and computes the fraction
+    of predictions (argmax of logits) matching synthetic labels.
+
+    Args:
+        model: Model in eval mode.
+        device: Target device.
+        num_batches: Number of synthetic batches to evaluate on.
+
+    Returns:
+        float: Accuracy as a fraction (0.0 to 1.0).
+    """
+    model.eval()
+    correct = 0
+    total = 0
+    with torch.inference_mode():
+        for _ in range(num_batches):
+            inputs, labels = get_sample_batch(batch_size=BATCH_SIZE, device=device)
+            logits = model(inputs)
+            preds = logits.argmax(dim=1)
+            correct += (preds == labels).sum().item()
+            total += labels.size(0)
+    return correct / total if total > 0 else 0.0
+
+
 def distill_knowledge(teacher, student, device, epochs, lr, temperature, alpha):
     """Transfer knowledge from teacher to student using Hinton's distillation.
 
@@ -297,6 +325,9 @@ def main():
     train_model(teacher, device, TEACHER_EPOCHS, LEARNING_RATE)
     teacher.eval()
 
+    teacher_acc = evaluate_accuracy(teacher, device, NUM_VAL_BATCHES)
+    logger.info(f"Teacher accuracy: {teacher_acc * 100:.1f}%")
+
     teacher_size = measure_model_size(teacher)
     logger.info(
         f"Teacher size: {teacher_size['param_count']:,} params, "
@@ -325,6 +356,9 @@ def main():
     )
     train_model(student_scratch, device, STUDENT_EPOCHS, LEARNING_RATE)
     student_scratch.eval()
+
+    scratch_acc = evaluate_accuracy(student_scratch, device, NUM_VAL_BATCHES)
+    logger.info(f"Student (scratch) accuracy: {scratch_acc * 100:.1f}%")
 
     scratch_size = measure_model_size(student_scratch)
     logger.info(
@@ -377,6 +411,9 @@ def main():
     )
     student_distilled.eval()
 
+    distill_acc = evaluate_accuracy(student_distilled, device, NUM_VAL_BATCHES)
+    logger.info(f"Student (distilled) accuracy: {distill_acc * 100:.1f}%")
+
     distill_size = measure_model_size(student_distilled)
     logger.info(
         f"Student (distilled) size: {distill_size['param_count']:,} params, "
@@ -404,24 +441,25 @@ def main():
     # Model size comparison table
     logger.info("Model Size Comparison:")
     print()
-    print(f"+{'-' * 26}+{'-' * 14}+{'-' * 16}+{'-' * 20}+")
+    print(f"+{'-' * 26}+{'-' * 14}+{'-' * 16}+{'-' * 20}+{'-' * 12}+")
     print(
         f"| {'Model':<24} | {'Params':>12} | {'Size (MB)':>14} | "
-        f"{'Compression Ratio':>18} |"
+        f"{'Compression Ratio':>18} | {'Accuracy':>10} |"
     )
-    print(f"+{'-' * 26}+{'-' * 14}+{'-' * 16}+{'-' * 20}+")
+    print(f"+{'-' * 26}+{'-' * 14}+{'-' * 16}+{'-' * 20}+{'-' * 12}+")
 
     models_info = [
-        ("Teacher", teacher_size, 1.0),
-        ("Student (scratch)", scratch_size, teacher_size["param_count"] / scratch_size["param_count"]),
-        ("Student (distilled)", distill_size, teacher_size["param_count"] / distill_size["param_count"]),
+        ("Teacher", teacher_size, 1.0, teacher_acc),
+        ("Student (scratch)", scratch_size, teacher_size["param_count"] / scratch_size["param_count"], scratch_acc),
+        ("Student (distilled)", distill_size, teacher_size["param_count"] / distill_size["param_count"], distill_acc),
     ]
-    for name, size_info, ratio in models_info:
+    for name, size_info, ratio, acc in models_info:
         print(
             f"| {name:<24} | {size_info['param_count']:>12,} | "
-            f"{size_info['file_size_mb']:>14.2f} | {ratio:>17.1f}x |"
+            f"{size_info['file_size_mb']:>14.2f} | {ratio:>17.1f}x | "
+            f"{acc * 100:>9.1f}% |"
         )
-    print(f"+{'-' * 26}+{'-' * 14}+{'-' * 16}+{'-' * 20}+")
+    print(f"+{'-' * 26}+{'-' * 14}+{'-' * 16}+{'-' * 20}+{'-' * 12}+")
     print()
 
     # Inference speed comparison using print_benchmark_table
@@ -454,8 +492,9 @@ def main():
     )
     logger.info(
         f"Knowledge distillation produces a student model with "
-        f"{param_reduction:.0f}% fewer parameters and "
-        f"{speed_ratio:.0f}% of teacher's inference time"
+        f"{param_reduction:.0f}% fewer parameters, "
+        f"{speed_ratio:.0f}% of teacher's inference time, "
+        f"and {distill_acc * 100:.1f}% accuracy (teacher: {teacher_acc * 100:.1f}%)"
     )
 
     print("\n" + "=" * 60)
