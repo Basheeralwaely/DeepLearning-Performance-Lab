@@ -88,8 +88,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — TensorRT + ONNX Runtime inference tutorials
-- [ ] 05-02-PLAN.md — TorchScript JIT compilation tutorial
+- [x] 05-01-PLAN.md — TensorRT + ONNX Runtime inference tutorials
+- [x] 05-02-PLAN.md — TorchScript JIT compilation tutorial
 
 ### Phase 6: Distributed Training
 **Goal**: Users can scale training across multiple GPUs using various parallelism strategies
