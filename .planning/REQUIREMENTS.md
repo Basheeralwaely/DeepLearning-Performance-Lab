@@ -93,10 +93,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DIST-02 | Phase 6 | Pending |
 | DIST-03 | Phase 6 | Pending |
 | DIST-04 | Phase 6 | Pending |
+| ATTN-01 | Phase 7 | Pending |
+| ATTN-02 | Phase 7 | Pending |
+| ATTN-03 | Phase 7 | Pending |
 
 **Coverage:**
-- v1 requirements: 19 total
-- Mapped to phases: 19
+- v1 requirements: 22 total
+- Mapped to phases: 22
 - Unmapped: 0
 
 ---

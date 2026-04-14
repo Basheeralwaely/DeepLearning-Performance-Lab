@@ -105,18 +105,32 @@ Plans:
 Plans:
 - [x] 06-01: TBD
 - [x] 06-02: TBD
-- [ ] 06-03: TBD
+- [x] 06-03: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Repository Foundation | 0/2 | Not started | - |
 | 2. Profiling & Diagnostics | 0/2 | Not started | - |
 | 3. Mixed Precision Training | 0/2 | Not started | - |
-| 4. Model Compression | 0/3 | Not started | - |
+| 4. Model Compression | 0/2 | Not started | - |
 | 5. Inference Optimization | 0/2 | Not started | - |
 | 6. Distributed Training | 0/3 | Not started | - |
+| 7. Attention & DiT | 0/4 | Not started | - |
+
+### Phase 7: Attention mechanisms and Diffusion Transformer (DiT): cross/self/flash/multi-head attention, transformer architecture, DiT vs UNet, latent space importance, and large-batch unified transformer comparison
+
+**Goal:** Three standalone tutorials teach attention variants (hand-written), flash/SDPA memory & throughput wins over naive attention, and the large-batch throughput comparison between a param-matched DiT and UNet on a one-step diffusion training workload using synthetic latents
+**Requirements**: ATTN-01, ATTN-02, ATTN-03
+**Depends on:** Phase 6
+**Plans:** 4 plans
+
+Plans:
+- [x] 07-01-PLAN.md — Scaffold attention/ and transformers/ folders; add ATTN-01/02/03 to REQUIREMENTS.md; soften PROJECT.md architecture Out-of-Scope line per D-01
+- [x] 07-02-PLAN.md — Tutorial 1: attention/attention_variants.py — hand-written self/cross/multi-head/causal attention with per-variant timing and memory (ATTN-01)
+- [x] 07-03-PLAN.md — Tutorial 2: attention/flash_attention_sdpa.py — naive vs F.scaled_dot_product_attention sweep over seq∈[256,1024,4096] × batch∈[4,16,64] with OOM handling and sdpa_kernel backend selection (ATTN-02)
+- [x] 07-04-PLAN.md — Tutorial 3: transformers/dit_vs_unet.py — param-matched SimpleDiT vs SimpleUNet one-step diffusion training, batch sweep ∈[8,16,32,64,128] on synthetic [B,4,32,32] latents, throughput + peak memory (ATTN-03)
