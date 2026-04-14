@@ -16,6 +16,8 @@ Each tutorial is a standalone `.py` file with rich logging output, detailed inli
 | Inference Optimization | `inference/` | TensorRT, ONNX Runtime, TorchScript |
 | Distributed Training | `distributed_training/` | DDP, FSDP, model parallelism, DeepSpeed |
 | Pruning | `pruning/` | Structured/unstructured pruning techniques |
+| Attention | `attention/` | Attention variants, Flash Attention via SDPA |
+| Transformers | `transformers/` | DiT vs UNet architectures |
 
 ## Quick Start
 
@@ -54,6 +56,8 @@ See `profiling/reference_tutorial.py` for the canonical example.
 ├── inference/              # Inference optimization tutorials
 ├── distributed_training/   # Distributed training tutorials
 ├── pruning/                # Pruning technique tutorials
+├── attention/              # Attention variants and Flash Attention tutorials
+├── transformers/           # Transformer architecture tutorials (DiT vs UNet)
 └── utils/                  # Shared utilities (logging, benchmarks, models)
     ├── __init__.py         # Public API: setup_logging, benchmark, models, etc.
     ├── logging_config.py   # Standardized logging with timestamped format
