@@ -17,7 +17,7 @@ Each tutorial is a standalone `.py` file with rich logging output, detailed inli
 | Distributed Training | `distributed_training/` | DDP, FSDP, model parallelism, DeepSpeed |
 | Pruning | `pruning/` | Structured/unstructured pruning techniques |
 | Attention | `attention/` | Attention variants, Flash Attention via SDPA |
-| Transformers | `transformers/` | DiT vs UNet architectures |
+| Transformers | `transformers/` | DiT vs UNet architectures, Vit tutorial |
 
 ## Quick Start
 

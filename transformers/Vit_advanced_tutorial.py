@@ -173,7 +173,7 @@ class DiTBlock(nn.Module):
         self.attn = Attention(dim, n_heads, qk_norm=True)  # RMSNorm on Q/K
 
         self.norm2 = nn.LayerNorm(dim, elementwise_affine=False, eps=1e-6)
-        self.mlp = MLP(dim, int(dim * mlp_ratio))  # ideally SwiGLU
+        self.mlp = SwiGLU(dim, int(dim * mlp_ratio))  # ideally SwiGLU
 
         # adaLN-Zero: projects conditioning -> 6 * dim modulation params
         self.ada_mod = nn.Sequential(
